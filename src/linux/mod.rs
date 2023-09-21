@@ -1074,7 +1074,7 @@ impl ReadRecord {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct BranchEntry {
     pub from: u64,
     pub to: u64,
@@ -1082,9 +1082,11 @@ struct BranchEntry {
 }
 
 /// This record indicates a sample.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SampleRecord {
     header: EventHeader,
+    // if PERF_SAMPLE_IDENTIFIER
+    sample_id: u64,
     /// if PERF_SAMPLE_IP
     ip: u64,
     /// if PERF_SAMPLE_TID
@@ -1140,57 +1142,166 @@ pub struct SampleRecord {
     weight: u64,
     /// u64   data_src;   /* if PERF_SAMPLE_DATA_SRC */
     data_str: u64,
+    /// u64    transaction; /* if PERF_SAMPLE_TRANSACTION */
+    transaction: u64,
+    /// u64    abi;         /* if PERF_SAMPLE_REGS_INTR */
+    intr_abi: u64,
+    /// u64    regs[weight(mask)];
+    ///                     /* if PERF_SAMPLE_REGS_INTR */
+    intr_regs: Vec<u8>,
+    /// u64    phys_addr;   /* if PERF_SAMPLE_PHYS_ADDR */
+    phys_addr: u64,
+    /// u64    cgroup;      /* if PERF_SAMPLE_CGROUP */
+    cgroup: u64,
+    /// u64    data_page_size;
+    ///                   /* if PERF_SAMPLE_DATA_PAGE_SIZE */
+    data_page_size: u64,
+    /// u64    code_page_size;
+    ///                   /* if PERF_SAMPLE_CODE_PAGE_SIZE */
+    code_page_size: u64,
+    /// u64    size;        /* if PERF_SAMPLE_AUX */
+    /// char   data[size];  /* if PERF_SAMPLE_AUX */
+    aux_data: Vec<u8>,
 }
 
 impl SampleRecord {
-    unsafe fn copy_from_raw_ptr(ptr: *const u8) -> SampleRecord {
+    unsafe fn copy_from_raw_ptr(ptr: *const u8, sample_type: SampleFormatFlags) -> SampleRecord {
         let header: EventHeader = EventHeader::copy_from_raw_ptr(ptr);
-        let ip: u64 = read(ptr, 8);
-        let pid: u32 = read(ptr, 16);
-        let tid: u32 = read(ptr, 20);
-        let time: u64 = read(ptr, 24);
-        let addr: u64 = read(ptr, 32);
-        let id: u64 = read(ptr, 40);
-        let stream_id: u64 = read(ptr, 48);
-        let cpu: u32 = read(ptr, 52);
-        let res: u32 = read(ptr, 56);
-        let period: u64 = read(ptr, 64);
+        let mut offset = mem::size_of::<EventHeader>() as _;
+        let mut sample_record = SampleRecord::default();
 
-        // TODO:
-        let v: FileReadFormat = FileReadFormat::copy_from_raw_ptr(ptr.offset(72));
-        let ips: Vec<u64> = Vec::new();
-        let raw_sample: Vec<u8> = Vec::new();
-        let lbr: Vec<BranchEntry> = Vec::new();
-        let abi: u64 = 0;
-        let regs: Vec<u64> = Vec::new();
-        let user_stack: Vec<u8> = Vec::new();
-        let dyn_size: u64 = 0;
-        let weight: u64 = 0;
-        let data_str: u64 = 0;
-
-        SampleRecord {
-            header,
-            ip,
-            pid,
-            tid,
-            time,
-            addr,
-            id,
-            stream_id,
-            cpu,
-            res,
-            period,
-            v,
-            ips,
-            raw_sample,
-            lbr,
-            abi,
-            regs,
-            user_stack,
-            dyn_size,
-            weight,
-            data_str,
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_IDENTIFIER) {
+            sample_record.sample_id = read(ptr, offset);
+            offset += 8;
         }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_IP) {
+            sample_record.ip = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_TID) {
+            sample_record.pid = read(ptr, offset);
+            offset += 4;
+            sample_record.tid = read(ptr, offset);
+            offset += 4;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_TIME) {
+            sample_record.time = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_ADDR) {
+            sample_record.addr = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_ID) {
+            sample_record.id = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_STREAM_ID) {
+            sample_record.stream_id = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_CPU) {
+            sample_record.cpu = read(ptr, offset);
+            offset += 4;
+            sample_record.res = read(ptr, offset);
+            offset += 4;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_PERIOD) {
+            sample_record.period = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_READ) {
+            // FIXME: relies on correct representation of `struct read_format;`
+            unimplemented!();
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_CALLCHAIN) {
+            let nr = read(ptr, offset);
+            offset += 8;
+            for _ in 0..nr {
+                sample_record.ips.push(read(ptr, offset));
+                offset += 8;
+            }
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_RAW) {
+            let size = read(ptr, offset);
+            offset += 4;
+            for _ in 0..size {
+                sample_record.raw_sample.push(read(ptr, offset));
+                offset += 1;
+            }
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_BRANCH_STACK) {
+            let bnr = read(ptr, offset);
+            offset += 8;
+            for _ in 0..bnr {
+                sample_record.lbr.push(read(ptr, offset));
+                offset += mem::size_of::<BranchEntry>() as isize;
+            }
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_REGS_USER) {
+            sample_record.abi = read(ptr, offset);
+            offset += 8;
+            // FIXME: relies on correct representation of `u64    regs[weight(mask)];`
+            unimplemented!();
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_STACK_USER) {
+            let size = read(ptr, offset);
+            offset += 8;
+            for _ in 0..size {
+                sample_record.user_stack.push(read(ptr, offset));
+                offset += 1;
+            }
+            if size != 0 {
+                sample_record.dyn_size = read(ptr, offset);
+                offset += 8;
+            }
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_WEIGHT)
+            || sample_type.contains(SampleFormatFlags::PERF_SAMPLE_WEIGHT_STRUCT)
+        {
+            sample_record.weight = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_DATA_SRC) {
+            sample_record.data_str = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_TRANSACTION) {
+            sample_record.transaction = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_REGS_INTR) {
+            sample_record.intr_abi = read(ptr, offset);
+            offset += 8;
+            // FIXME: relies on correct representation of `u64    regs[weight(mask)];`
+            unimplemented!();
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_PHYS_ADDR) {
+            sample_record.phys_addr = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_CGROUP) {
+            sample_record.cgroup = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_DATA_PAGE_SIZE) {
+            sample_record.data_page_size = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_CODE_PAGE_SIZE) {
+            sample_record.code_page_size = read(ptr, offset);
+            offset += 8;
+        }
+        if sample_type.contains(SampleFormatFlags::PERF_SAMPLE_AUX) {
+            let size = read(ptr, offset);
+            offset += 8;
+            for _ in 0..size {
+                sample_record.aux_data.push(read(ptr, offset));
+                offset += 1;
+            }
+        }
+
+        sample_record
     }
 }
 
@@ -1216,13 +1327,11 @@ impl Iterator for SamplingPerfCounter {
     ///  * The exposed C struct layout would be difficult to read with request.
     ///  * We need to advance the tail pointer to make space for new events.
     fn next(&mut self) -> Option<Event> {
-        if self.header().data_tail < self.header().data_head {
-            let offset: isize = (self.header().data_tail as usize % self.events_size) as isize;
+        if self.metadata().data_tail < self.metadata().data_head {
+            let offset: isize = (self.metadata().data_tail % self.metadata().data_size) as isize;
 
-            let mut bytes_read = 0;
-            let event_ptr = unsafe { self.events().offset(offset) };
+            let event_ptr = unsafe { self.ring_buffer().offset(offset) };
             let event: EventHeader = unsafe { EventHeader::copy_from_raw_ptr(event_ptr) };
-            bytes_read += mem::size_of::<EventHeader>() as u64;
 
             let record = match event.event_type {
                 perf_event::PERF_RECORD_MMAP => {
@@ -1261,7 +1370,7 @@ impl Iterator for SamplingPerfCounter {
                 }
                 perf_event::PERF_RECORD_SAMPLE => {
                     let record: SampleRecord =
-                        unsafe { SampleRecord::copy_from_raw_ptr(event_ptr) };
+                        unsafe { SampleRecord::copy_from_raw_ptr(event_ptr, self.sample_type()) };
                     Some(Event::Sample(record))
                 }
                 perf_event::PERF_RECORD_MMAP2 => {
@@ -1273,10 +1382,8 @@ impl Iterator for SamplingPerfCounter {
                 }
             };
 
-            //bytes_read += size;
-
-            let header = self.mut_header();
-            header.data_tail = bytes_read;
+            let header = self.mut_metadata();
+            header.data_tail += event.size as u64;
 
             record
         } else {
@@ -1338,5 +1445,9 @@ impl SamplingPerfCounter {
             Event::Read(a) => println!("{:?}", a),
             Event::Sample(a) => println!("{:?}", a),
         }
+    }
+
+    fn sample_type(&self) -> SampleFormatFlags {
+        self.pc.attributes.sample_type
     }
 }
