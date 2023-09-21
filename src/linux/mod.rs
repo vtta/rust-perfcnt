@@ -484,126 +484,126 @@ impl PerfCounterBuilderLinux {
         self
     }
 
-    pub fn enable_sampling_ip<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_ip<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_IP);
         self
     }
 
-    pub fn enable_sampling_tid<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_tid<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_TID);
         self
     }
 
-    pub fn enable_sampling_time<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_time<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_TIME);
         self
     }
 
-    pub fn enable_sampling_addr<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_addr<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_ADDR);
         self
     }
 
-    pub fn enable_sampling_read<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_read<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_READ);
         self
     }
 
-    pub fn enable_sampling_callchain<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_callchain<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_CALLCHAIN);
         self
     }
 
-    pub fn enable_sampling_sample_id<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_sample_id<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_ID);
         self
     }
 
-    pub fn enable_sampling_cpu<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_cpu<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_CPU);
         self
     }
 
-    pub fn enable_sampling_period<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_period<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_PERIOD);
         self
     }
 
-    pub fn enable_sampling_stream_id<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_stream_id<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_STREAM_ID);
         self
     }
 
-    pub fn enable_sampling_raw<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_raw<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_RAW);
         self
     }
 
-    pub fn enable_sampling_branch_stack<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_branch_stack<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_BRANCH_STACK);
         self
     }
 
-    pub fn enable_sampling_regs_user<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_regs_user<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_REGS_USER);
         self
     }
 
-    pub fn enable_sampling_stack_user<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_stack_user<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_STACK_USER);
         self
     }
 
-    pub fn enable_sampling_sample_weight<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_sample_weight<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_WEIGHT);
         self
     }
 
-    pub fn enable_sampling_data_src<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_data_src<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_DATA_SRC);
         self
     }
 
-    pub fn enable_sampling_identifier<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_identifier<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_IDENTIFIER);
         self
     }
 
-    pub fn enable_sampling_transaction<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+    pub fn enable_sampling_transaction<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_TRANSACTION);
