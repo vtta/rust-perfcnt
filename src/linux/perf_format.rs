@@ -537,6 +537,12 @@ bitflags! {
         const PERF_SAMPLE_IDENTIFIER = 1 << 16;
         const PERF_SAMPLE_TRANSACTION = 1 << 17;
         const PERF_SAMPLE_REGS_INTR = 1 << 18;
+        const PERF_SAMPLE_PHYS_ADDR	= 1 << 19;
+        const PERF_SAMPLE_AUX = 1 << 20;
+        const PERF_SAMPLE_CGROUP = 1 << 21;
+        const PERF_SAMPLE_DATA_PAGE_SIZE = 1 << 22;
+        const PERF_SAMPLE_CODE_PAGE_SIZE = 1 << 23;
+        const PERF_SAMPLE_WEIGHT_STRUCT = 1 << 24;
     }
 }
 

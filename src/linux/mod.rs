@@ -734,6 +734,12 @@ pub struct MMAPPage {
     data_head: u64,
     /// user-space written tail
     data_tail: u64,
+    data_offset: u64,
+    data_size: u64,
+    aux_head: u64,
+    aux_tail: u64,
+    aux_offset: u64,
+    aux_size: u64,
 }
 
 impl fmt::Debug for MMAPPage {
