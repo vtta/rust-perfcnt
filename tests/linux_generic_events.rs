@@ -47,7 +47,10 @@ pub fn test_cache_events() {
             let res = pc.read().expect("Can not read the counter");
             assert!(res > 0);
         }
-        Err(e) => assert_eq!(e.raw_os_error().unwrap(), 13),
+        Err(e) => {
+            let errno = e.raw_os_error().unwrap();
+            assert!(errno == libc::EPERM || errno == libc::EACCES);
+        }
     }
 }
 
