@@ -1318,15 +1318,37 @@ pub enum Event {
     Sample(SampleRecord),
 }
 
-impl Iterator for SamplingPerfCounter {
+pub struct SamplingPerfCounterIter<'a>(&'a mut SamplingPerfCounter);
+
+impl<'a> IntoIterator for &'a mut SamplingPerfCounter {
     type Item = Event;
+
+    type IntoIter = SamplingPerfCounterIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        SamplingPerfCounterIter(self)
+    }
+}
+
+impl<'a> Iterator for SamplingPerfCounterIter<'a> {
+    type Item = Event;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.get()
+    }
+}
+
+impl SamplingPerfCounter {
+    pub fn iter(&mut self) -> SamplingPerfCounterIter {
+        SamplingPerfCounterIter(self)
+    }
 
     /// Iterate over the event buffer.
     ///
     /// We copy and transform the events for two reasons:
     ///  * The exposed C struct layout would be difficult to read with request.
     ///  * We need to advance the tail pointer to make space for new events.
-    fn next(&mut self) -> Option<Event> {
+    fn get(&mut self) -> Option<Event> {
         if self.metadata().data_tail < self.metadata().data_head {
             let offset: isize = (self.metadata().data_tail % self.metadata().data_size) as isize;
 
@@ -1390,9 +1412,7 @@ impl Iterator for SamplingPerfCounter {
             None
         }
     }
-}
 
-impl SamplingPerfCounter {
     pub fn new(pc: PerfCounter) -> SamplingPerfCounter {
         Self::new_with_mmap_pages(pc, 16).unwrap()
     }
@@ -1432,7 +1452,7 @@ impl SamplingPerfCounter {
     }
 
     pub fn print(&mut self) {
-        let event: Event = self.next().unwrap();
+        let event: Event = self.get().unwrap();
         println!("{:?}", event);
         match event {
             Event::MMAP(a) => println!("{:?}", a.filename),

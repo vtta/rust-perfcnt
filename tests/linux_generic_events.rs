@@ -24,9 +24,9 @@ pub fn sample_event() {
     println!("asdf");
     println!("asdf");
 
-    let spc = SamplingPerfCounter::new(pc);
+    let mut spc = SamplingPerfCounter::new(pc);
 
-    for e in spc {
+    for e in spc.iter() {
         println!("{:?}", e);
     }
 }
