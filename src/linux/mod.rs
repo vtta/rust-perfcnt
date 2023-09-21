@@ -40,7 +40,7 @@ fn perf_event_open(
             pid,
             cpu,
             group_fd,
-            flags
+            flags,
         ) as isize
     }
 }
@@ -234,7 +234,9 @@ impl PerfCounterBuilderLinux {
 
     /// Instantiate a H/W performance counter using a hardware event as described in Intels SDM.
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    pub fn from_intel_event_description(counter: &x86::perfcnt::intel::EventDescription) -> PerfCounterBuilderLinux {
+    pub fn from_intel_event_description(
+        counter: &x86::perfcnt::intel::EventDescription,
+    ) -> PerfCounterBuilderLinux {
         use x86::perfcnt::intel::Tuple;
         let mut pc: PerfCounterBuilderLinux = Default::default();
         let mut config: u64 = 0;
@@ -917,11 +919,7 @@ impl LostRecord {
         let id: u64 = read(ptr, 8);
         let lost: u64 = read(ptr, 16);
 
-        LostRecord {
-            header,
-            id,
-            lost,
-        }
+        LostRecord { header, id, lost }
     }
 }
 
