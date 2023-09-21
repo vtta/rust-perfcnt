@@ -799,7 +799,7 @@ impl<'a> AbstractPerfCounter for PerfCounter {
 pub struct SamplingPerfCounter {
     pc: PerfCounter,
     map: mmap::MemoryMap,
-    events_size: usize,
+    data_size: usize,
 }
 
 unsafe fn read<U: Copy>(ptr: *const u8, offset: isize) -> U {
@@ -1281,7 +1281,14 @@ impl Iterator for SamplingPerfCounter {
 
 impl SamplingPerfCounter {
     pub fn new(pc: PerfCounter) -> SamplingPerfCounter {
-        let size = (1 + 16) * 4096;
+        Self::new_with_mmap_pages(pc, 16).unwrap()
+    }
+
+    pub fn new_with_mmap_pages(
+        pc: PerfCounter,
+        mmap_pages: usize,
+    ) -> Result<SamplingPerfCounter, mmap::MapError> {
+        let size = (1 + mmap_pages) * 4096;
         let res: mmap::MemoryMap = mmap::MemoryMap::new(
             size,
             &[
@@ -1290,14 +1297,13 @@ impl SamplingPerfCounter {
                 mmap::MapOption::MapNonStandardFlags(MAP_SHARED),
                 mmap::MapOption::MapReadable,
             ],
-        )
-        .unwrap();
+        )?;
 
-        SamplingPerfCounter {
+        Ok(SamplingPerfCounter {
             pc,
             map: res,
-            events_size: 16 * 4096,
-        }
+            data_size: mmap_pages * 4096,
+        })
     }
 
     fn header(&self) -> &MMAPPage {
