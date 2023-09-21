@@ -512,7 +512,8 @@ impl PerfCounterBuilderLinux {
         self
     }
 
-    pub fn enable_sampling_read<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
+    pub fn enable_sampling_read<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+        unimplemented!();
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_READ);
@@ -568,7 +569,8 @@ impl PerfCounterBuilderLinux {
         self
     }
 
-    pub fn enable_sampling_regs_user<'a>(&'a mut self) -> &'a mut PerfCounterBuilderLinux {
+    pub fn enable_sampling_regs_user<'a>(&'a mut self) -> &'a PerfCounterBuilderLinux {
+        unimplemented!();
         self.attrs
             .sample_type
             .insert(SampleFormatFlags::PERF_SAMPLE_REGS_USER);
