@@ -16,7 +16,7 @@ version = "0.52.0"
 features = ["performance-counter"]
 
 [dependencies]
-bitflags = "1.2.1"
+bitflags = "2.4"
 libc = "0.2"
 mmap = "0.1.*"
 nom = "4.2.3"
