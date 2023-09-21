@@ -1306,16 +1306,16 @@ impl SamplingPerfCounter {
         })
     }
 
-    fn header(&self) -> &MMAPPage {
+    fn metadata(&self) -> &MMAPPage {
         unsafe { mem::transmute::<*mut u8, &MMAPPage>(self.map.data()) }
     }
 
-    fn mut_header(&mut self) -> &mut MMAPPage {
+    fn mut_metadata(&mut self) -> &mut MMAPPage {
         unsafe { mem::transmute::<*mut u8, &mut MMAPPage>(self.map.data()) }
     }
 
-    fn events(&self) -> *const u8 {
-        unsafe { self.map.data().offset(4096) }
+    fn ring_buffer(&self) -> *const u8 {
+        unsafe { self.map.data().offset(self.metadata().data_offset as _) }
     }
 
     pub fn print(&mut self) {
