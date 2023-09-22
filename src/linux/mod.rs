@@ -1429,6 +1429,7 @@ impl SamplingPerfCounter {
                 mmap::MapOption::MapOffset(0),
                 mmap::MapOption::MapNonStandardFlags(MAP_SHARED),
                 mmap::MapOption::MapReadable,
+                mmap::MapOption::MapWritable,
             ],
         )?;
 
